@@ -103,26 +103,28 @@ fun AddTaskBottomSheet(
                     modifier = Modifier.weight(1f)
                 )
                 
-                SegmentedButton(
-                    checked = !isForTomorrow,
-                    onCheckedChange = { isForTomorrow = false },
-                    shape = SegmentedButtonDefaults.itemShape(
-                        index = 0,
-                        count = 2
-                    )
-                ) {
-                    Text("Today")
-                }
-                
-                SegmentedButton(
-                    checked = isForTomorrow,
-                    onCheckedChange = { isForTomorrow = true },
-                    shape = SegmentedButtonDefaults.itemShape(
-                        index = 1,
-                        count = 2
-                    )
-                ) {
-                    Text("Tomorrow")
+                SingleChoiceSegmentedButtonRow {
+                    SegmentedButton(
+                        selected = !isForTomorrow,
+                        onClick = { isForTomorrow = false },
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = 0,
+                            count = 2
+                        )
+                    ) {
+                        Text("Today")
+                    }
+                    
+                    SegmentedButton(
+                        selected = isForTomorrow,
+                        onClick = { isForTomorrow = true },
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = 1,
+                            count = 2
+                        )
+                    ) {
+                        Text("Tomorrow")
+                    }
                 }
             }
             

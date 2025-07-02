@@ -1,10 +1,10 @@
 package io.tigranes.app_one.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.CalendarViewDay
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(
@@ -15,25 +15,25 @@ sealed class Screen(
     object Today : Screen(
         route = "today",
         title = "Today",
-        icon = Icons.Default.CalendarToday
+        icon = Icons.Default.Schedule
     )
     
     object Tomorrow : Screen(
         route = "tomorrow",
         title = "Tomorrow",
-        icon = Icons.Default.CalendarViewDay
+        icon = Icons.Default.Event
     )
     
     object Yesterday : Screen(
         route = "yesterday",
         title = "Yesterday",
-        icon = Icons.Default.History
+        icon = Icons.Default.DateRange
     )
     
     object Stats : Screen(
         route = "stats",
         title = "Stats",
-        icon = Icons.Default.BarChart
+        icon = Icons.AutoMirrored.Filled.ShowChart
     )
 }
 

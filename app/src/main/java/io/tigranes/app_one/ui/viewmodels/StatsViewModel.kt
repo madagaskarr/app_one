@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import javax.inject.Inject
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class StatsViewModel @Inject constructor(
     private val taskRepository: TaskRepository,

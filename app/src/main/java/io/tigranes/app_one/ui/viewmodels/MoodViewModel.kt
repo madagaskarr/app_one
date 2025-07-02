@@ -7,6 +7,9 @@ import io.tigranes.app_one.data.model.DailyMood
 import io.tigranes.app_one.data.repository.MoodRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,8 +54,8 @@ class MoodViewModel @Inject constructor(
                         isRecording = false,
                         hasMoodForToday = true,
                         todaysMood = DailyMood(
-                            date = kotlinx.datetime.Clock.System.now()
-                                .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+                            date = Clock.System.now()
+                                .toLocalDateTime(TimeZone.currentSystemDefault())
                                 .date,
                             rating = rating
                         ),
