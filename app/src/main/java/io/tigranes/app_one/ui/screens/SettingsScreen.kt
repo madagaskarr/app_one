@@ -12,19 +12,59 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.hilt.navigation.compose.hiltViewModel
 import io.tigranes.app_one.data.preferences.Theme
-import io.tigranes.app_one.ui.components.ThemeDialog
+import io.tigranes.app_one.ui.components.*
+import io.tigranes.app_one.ui.viewmodels.BackupViewModel
 import io.tigranes.app_one.ui.viewmodels.SettingsViewModel
+import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = hiltViewModel()
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
+    backupViewModel: BackupViewModel = hiltViewModel()
 ) {
-    val userPreferences by viewModel.userPreferences.collectAsState()
+    val userPreferences by settingsViewModel.userPreferences.collectAsState()
+    val backupUiState by backupViewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    
     var showThemeDialog by remember { mutableStateOf(false) }
+    var showExportDialog by remember { mutableStateOf(false) }
+    var showImportDialog by remember { mutableStateOf(false) }
+    var showClearDataDialog by remember { mutableStateOf(false) }
+    
+    // File pickers
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let { backupViewModel.exportData(it) }
+    }
+    
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { backupViewModel.importData(it) }
+    }
+    
+    // Show snackbar messages
+    LaunchedEffect(backupUiState) {
+        backupUiState.message?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            backupViewModel.dismissMessage()
+        }
+        backupUiState.error?.let { error ->
+            snackbarHostState.showSnackbar(error)
+            backupViewModel.dismissMessage()
+        }
+    }
     
     Column(
         modifier = modifier
@@ -58,7 +98,7 @@ fun SettingsScreen(
                     "Get reminded about your daily tasks"
                 },
                 checked = userPreferences.dailyReminderEnabled,
-                onCheckedChange = viewModel::updateDailyReminder
+                onCheckedChange = settingsViewModel::updateDailyReminder
             )
             
             if (userPreferences.dailyReminderEnabled) {
@@ -81,7 +121,7 @@ fun SettingsScreen(
                     "Get reminded to log your mood"
                 },
                 checked = userPreferences.moodCheckInEnabled,
-                onCheckedChange = viewModel::updateMoodCheckIn
+                onCheckedChange = settingsViewModel::updateMoodCheckIn
             )
             
             if (userPreferences.moodCheckInEnabled) {
@@ -103,7 +143,7 @@ fun SettingsScreen(
                 title = "Show Completed Tasks",
                 subtitle = "Display completed tasks in the task list",
                 checked = userPreferences.showCompletedTasks,
-                onCheckedChange = viewModel::updateShowCompletedTasks
+                onCheckedChange = settingsViewModel::updateShowCompletedTasks
             )
             
             Spacer(modifier = Modifier.height(8.dp))
@@ -117,7 +157,7 @@ fun SettingsScreen(
                     "Keep completed tasks forever"
                 },
                 checked = userPreferences.autoDeleteCompletedTasks,
-                onCheckedChange = viewModel::updateAutoDelete
+                onCheckedChange = settingsViewModel::updateAutoDelete
             )
             
             if (userPreferences.autoDeleteCompletedTasks) {
@@ -143,7 +183,7 @@ fun SettingsScreen(
                     "Week starts on Sunday"
                 },
                 checked = userPreferences.startWeekOnMonday,
-                onCheckedChange = viewModel::updateStartWeekOnMonday
+                onCheckedChange = settingsViewModel::updateStartWeekOnMonday
             )
         }
         
@@ -155,21 +195,21 @@ fun SettingsScreen(
                 icon = Icons.Default.CloudUpload,
                 title = "Export Data",
                 subtitle = "Save your data to a file",
-                onClick = { /* Handle export */ }
+                onClick = { showExportDialog = true }
             )
             
             SettingsItem(
                 icon = Icons.Default.CloudDownload,
                 title = "Import Data",
                 subtitle = "Restore data from a file",
-                onClick = { /* Handle import */ }
+                onClick = { showImportDialog = true }
             )
             
             SettingsItem(
                 icon = Icons.Default.Delete,
                 title = "Clear All Data",
                 subtitle = "Delete all tasks and moods",
-                onClick = { /* Show confirmation dialog */ }
+                onClick = { showClearDataDialog = true }
             )
         }
         
@@ -199,10 +239,43 @@ fun SettingsScreen(
     if (showThemeDialog) {
         ThemeDialog(
             currentTheme = userPreferences.theme,
-            onThemeSelected = viewModel::updateTheme,
+            onThemeSelected = settingsViewModel::updateTheme,
             onDismiss = { showThemeDialog = false }
         )
     }
+    
+    if (showExportDialog) {
+        ExportConfirmationDialog(
+            onConfirm = {
+                showExportDialog = false
+                val timestamp = Clock.System.now().epochSeconds
+                exportLauncher.launch("commitment_backup_$timestamp.json")
+            },
+            onDismiss = { showExportDialog = false }
+        )
+    }
+    
+    if (showImportDialog) {
+        ImportConfirmationDialog(
+            onConfirm = {
+                showImportDialog = false
+                importLauncher.launch(arrayOf("application/json"))
+            },
+            onDismiss = { showImportDialog = false }
+        )
+    }
+    
+    if (showClearDataDialog) {
+        ClearDataConfirmationDialog(
+            onConfirm = {
+                showClearDataDialog = false
+                backupViewModel.clearAllData()
+            },
+            onDismiss = { showClearDataDialog = false }
+        )
+    }
+    
+    SnackbarHost(hostState = snackbarHostState)
 }
 
 @Composable

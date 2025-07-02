@@ -36,6 +36,9 @@ interface MoodDao {
     
     @Query("SELECT date, rating FROM daily_mood WHERE date BETWEEN :startDate AND :endDate ORDER BY date ASC")
     suspend fun getMoodTrend(startDate: LocalDate, endDate: LocalDate): List<MoodTrendPoint>
+    
+    @Query("SELECT * FROM daily_mood WHERE date BETWEEN :startDate AND :endDate")
+    suspend fun getMoodsInRange(startDate: LocalDate, endDate: LocalDate): List<DailyMood>
 }
 
 data class MoodTrendPoint(
