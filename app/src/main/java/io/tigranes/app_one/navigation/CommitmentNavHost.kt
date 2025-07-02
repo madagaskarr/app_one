@@ -29,5 +29,8 @@ fun CommitmentNavHost(
         composable(Screen.Stats.route) {
             StatsScreen()
         }
+        composable(Screen.Settings.route) {
+            SettingsScreen()
+        }
     }
 }

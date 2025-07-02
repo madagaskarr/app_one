@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(
@@ -34,6 +35,12 @@ sealed class Screen(
         route = "stats",
         title = "Stats",
         icon = Icons.AutoMirrored.Filled.ShowChart
+    )
+    
+    object Settings : Screen(
+        route = "settings",
+        title = "Settings",
+        icon = Icons.Default.Settings
     )
 }
 

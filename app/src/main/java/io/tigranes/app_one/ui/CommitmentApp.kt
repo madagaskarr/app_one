@@ -1,6 +1,8 @@
 package io.tigranes.app_one.ui
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -33,25 +35,49 @@ fun CommitmentApp() {
     }
     
     Scaffold(
-        bottomBar = {
-            NavigationBar {
-                val currentDestination = navBackStackEntry?.destination
-                
-                bottomNavItems.forEach { screen ->
-                    NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = screen.title) },
-                        label = { Text(screen.title) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
+        topBar = {
+            val currentScreen = bottomNavItems.find { it.route == currentRoute }
+                ?: if (currentRoute == Screen.Settings.route) Screen.Settings else Screen.Today
+            
+            TopAppBar(
+                title = { Text(currentScreen.title) },
+                actions = {
+                    if (currentRoute != Screen.Settings.route) {
+                        IconButton(
+                            onClick = {
+                                navController.navigate(Screen.Settings.route)
                             }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Settings"
+                            )
                         }
-                    )
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            if (currentRoute != Screen.Settings.route) {
+                NavigationBar {
+                    val currentDestination = navBackStackEntry?.destination
+                    
+                    bottomNavItems.forEach { screen ->
+                        NavigationBarItem(
+                            icon = { Icon(screen.icon, contentDescription = screen.title) },
+                            label = { Text(screen.title) },
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        )
+                    }
                 }
             }
         },
