@@ -20,6 +20,14 @@ class MoodViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MoodUiState())
     val uiState: StateFlow<MoodUiState> = _uiState.asStateFlow()
     
+    val hasMoodToday: StateFlow<Boolean> = _uiState
+        .map { it.hasMoodForToday }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+    
     init {
         checkTodaysMood()
     }

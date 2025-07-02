@@ -24,4 +24,21 @@ interface MoodDao {
 
     @Delete
     suspend fun deleteMood(mood: DailyMood)
+    
+    @Query("SELECT COUNT(*) FROM daily_mood WHERE date BETWEEN :startDate AND :endDate")
+    suspend fun getMoodCountInRange(startDate: LocalDate, endDate: LocalDate): Int
+    
+    @Query("SELECT MIN(rating) FROM daily_mood WHERE date BETWEEN :startDate AND :endDate")
+    suspend fun getMinMoodInRange(startDate: LocalDate, endDate: LocalDate): Int?
+    
+    @Query("SELECT MAX(rating) FROM daily_mood WHERE date BETWEEN :startDate AND :endDate")
+    suspend fun getMaxMoodInRange(startDate: LocalDate, endDate: LocalDate): Int?
+    
+    @Query("SELECT date, rating FROM daily_mood WHERE date BETWEEN :startDate AND :endDate ORDER BY date ASC")
+    suspend fun getMoodTrend(startDate: LocalDate, endDate: LocalDate): List<MoodTrendPoint>
 }
+
+data class MoodTrendPoint(
+    val date: LocalDate,
+    val rating: Int
+)

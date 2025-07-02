@@ -1,63 +1,66 @@
 package io.tigranes.app_one.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun MoodCheckInDialog(
     onDismiss: () -> Unit,
     onMoodSelected: (Int) -> Unit
 ) {
-    AlertDialog(
+    var selectedMood by remember { mutableStateOf<Int?>(null) }
+    
+    Dialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "How are you feeling today?",
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-        },
-        text = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = false
+        )
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                MoodEmoji(emoji = "😔", rating = 1, onSelect = onMoodSelected)
-                MoodEmoji(emoji = "😟", rating = 2, onSelect = onMoodSelected)
-                MoodEmoji(emoji = "😐", rating = 3, onSelect = onMoodSelected)
-                MoodEmoji(emoji = "😊", rating = 4, onSelect = onMoodSelected)
-                MoodEmoji(emoji = "😄", rating = 5, onSelect = onMoodSelected)
-            }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Later")
+                Text(
+                    text = "Daily Mood Check-in",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                MoodSelector(
+                    selectedMood = selectedMood,
+                    onMoodSelected = { mood ->
+                        selectedMood = mood
+                        // Auto-save after a short delay for better UX
+                        onMoodSelected(mood)
+                        onDismiss()
+                    }
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text("Maybe Later")
+                }
             }
         }
-    )
-}
-
-@Composable
-private fun MoodEmoji(
-    emoji: String,
-    rating: Int,
-    onSelect: (Int) -> Unit
-) {
-    Text(
-        text = emoji,
-        fontSize = 36.sp,
-        modifier = Modifier
-            .clickable { onSelect(rating) }
-            .padding(8.dp)
-    )
+    }
 }

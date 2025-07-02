@@ -36,4 +36,24 @@ interface TaskDao {
 
     @Query("SELECT COUNT(*) FROM task WHERE due_date = :date")
     suspend fun getTotalCount(date: LocalDate): Int
+    
+    @Query("SELECT * FROM task WHERE due_date BETWEEN :startDate AND :endDate")
+    suspend fun getTasksInDateRange(startDate: LocalDate, endDate: LocalDate): List<Task>
+    
+    @Query("SELECT COUNT(*) FROM task WHERE due_date BETWEEN :startDate AND :endDate AND category = :category AND completed = 1")
+    suspend fun getCompletedCountByCategory(startDate: LocalDate, endDate: LocalDate, category: String): Int
+    
+    @Query("SELECT COUNT(*) FROM task WHERE due_date BETWEEN :startDate AND :endDate AND category = :category")
+    suspend fun getTotalCountByCategory(startDate: LocalDate, endDate: LocalDate, category: String): Int
+    
+    @Query("SELECT category, COUNT(*) as count FROM task WHERE due_date BETWEEN :startDate AND :endDate GROUP BY category")
+    suspend fun getTaskCountsByCategory(startDate: LocalDate, endDate: LocalDate): List<CategoryCount>
+    
+    @Query("SELECT category, COUNT(*) as count FROM task WHERE due_date BETWEEN :startDate AND :endDate AND completed = 1 GROUP BY category")
+    suspend fun getCompletedTaskCountsByCategory(startDate: LocalDate, endDate: LocalDate): List<CategoryCount>
 }
+
+data class CategoryCount(
+    val category: String,
+    val count: Int
+)

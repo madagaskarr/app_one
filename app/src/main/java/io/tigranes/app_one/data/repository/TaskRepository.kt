@@ -1,5 +1,6 @@
 package io.tigranes.app_one.data.repository
 
+import io.tigranes.app_one.data.dao.CategoryCount
 import io.tigranes.app_one.data.dao.TaskDao
 import io.tigranes.app_one.data.model.Category
 import io.tigranes.app_one.data.model.Task
@@ -85,9 +86,54 @@ class TaskRepository @Inject constructor(
             completionRate = if (totalCount > 0) completedCount.toFloat() / totalCount else 0f
         )
     }
+    
+    suspend fun getTasksInDateRange(startDate: LocalDate, endDate: LocalDate): List<Task> {
+        return taskDao.getTasksInDateRange(startDate, endDate)
+    }
+    
+    suspend fun getCategoryStatisticsInRange(
+        startDate: LocalDate, 
+        endDate: LocalDate
+    ): Map<Category, CategoryStatistics> {
+        val result = mutableMapOf<Category, CategoryStatistics>()
+        
+        Category.values().forEach { category ->
+            val completed = taskDao.getCompletedCountByCategory(startDate, endDate, category.name)
+            val total = taskDao.getTotalCountByCategory(startDate, endDate, category.name)
+            result[category] = CategoryStatistics(
+                category = category,
+                completedCount = completed,
+                totalCount = total,
+                completionRate = if (total > 0) completed.toFloat() / total else 0f
+            )
+        }
+        
+        return result
+    }
+    
+    suspend fun getTaskCountsByCategory(startDate: LocalDate, endDate: LocalDate): Map<Category, Int> {
+        return taskDao.getTaskCountsByCategory(startDate, endDate)
+            .associate { 
+                Category.valueOf(it.category) to it.count
+            }
+    }
+    
+    suspend fun getCompletedTaskCountsByCategory(startDate: LocalDate, endDate: LocalDate): Map<Category, Int> {
+        return taskDao.getCompletedTaskCountsByCategory(startDate, endDate)
+            .associate { 
+                Category.valueOf(it.category) to it.count
+            }
+    }
 }
 
 data class TaskStatistics(
+    val completedCount: Int,
+    val totalCount: Int,
+    val completionRate: Float
+)
+
+data class CategoryStatistics(
+    val category: Category,
     val completedCount: Int,
     val totalCount: Int,
     val completionRate: Float

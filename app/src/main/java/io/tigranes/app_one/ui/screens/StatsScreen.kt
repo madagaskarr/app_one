@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import io.tigranes.app_one.data.model.Category
+import io.tigranes.app_one.ui.components.charts.*
 import io.tigranes.app_one.ui.viewmodels.StatsViewModel
 import io.tigranes.app_one.ui.viewmodels.StatsPeriod
 import io.tigranes.app_one.workers.RolloverManager
@@ -117,6 +119,80 @@ fun StatsScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    
+                    if (recentMoods.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        MoodLineChart(
+                            moods = recentMoods,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Category completion stats
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Completion by Category",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Convert category stats to proper format for bar chart
+                    val categoryCompletionRates = statsUiState.categoryStats.mapNotNull { (categoryName, stats) ->
+                        try {
+                            Category.valueOf(categoryName.uppercase()) to stats.completionRate
+                        } catch (e: IllegalArgumentException) {
+                            null
+                        }
+                    }.toMap()
+                    
+                    if (categoryCompletionRates.isNotEmpty()) {
+                        CompletionBarChart(
+                            categoryStats = categoryCompletionRates,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Category distribution
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Task Distribution",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Convert category stats to proper format for pie chart
+                    val categoryDistribution = statsUiState.categoryStats.mapNotNull { (categoryName, stats) ->
+                        try {
+                            Category.valueOf(categoryName.uppercase()) to (stats.completedCount to stats.totalCount)
+                        } catch (e: IllegalArgumentException) {
+                            null
+                        }
+                    }.toMap()
+                    
+                    if (categoryDistribution.isNotEmpty()) {
+                        CategoryPieChart(
+                            categoryStats = categoryDistribution,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
             

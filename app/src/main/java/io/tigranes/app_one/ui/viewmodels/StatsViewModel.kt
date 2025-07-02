@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.tigranes.app_one.data.model.DailyMood
 import io.tigranes.app_one.data.repository.MoodRepository
 import io.tigranes.app_one.data.repository.TaskRepository
+import io.tigranes.app_one.data.model.Category
 import io.tigranes.app_one.data.repository.TaskStatistics
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -62,22 +63,25 @@ class StatsViewModel @Inject constructor(
                     .toLocalDateTime(TimeZone.currentSystemDefault())
                     .date
                 
-                val categoryStats = mutableMapOf<String, CategoryStats>()
-                var totalCompleted = 0
-                var totalTasks = 0
+                val startDate = LocalDate(
+                    today.year,
+                    today.monthNumber,
+                    today.dayOfMonth - (days - 1)
+                )
                 
-                // Calculate stats for each day
-                for (i in 0 until days) {
-                    val date = LocalDate(
-                        today.year,
-                        today.monthNumber,
-                        today.dayOfMonth - i
+                // Use new aggregation methods for better performance
+                val categoryStatsMap = taskRepository.getCategoryStatisticsInRange(startDate, today)
+                val categoryStats = categoryStatsMap.mapValues { (_, stats) ->
+                    CategoryStats(
+                        category = stats.category.name,
+                        completedCount = stats.completedCount,
+                        totalCount = stats.totalCount,
+                        completionRate = stats.completionRate
                     )
-                    
-                    val stats = taskRepository.getTaskStatistics(date)
-                    totalCompleted += stats.completedCount
-                    totalTasks += stats.totalCount
                 }
+                
+                val totalCompleted = categoryStats.values.sumOf { it.completedCount }
+                val totalTasks = categoryStats.values.sumOf { it.totalCount }
                 
                 val averageMood = moodRepository.getAverageMoodForLastDays(days)
                 
@@ -90,7 +94,7 @@ class StatsViewModel @Inject constructor(
                             totalCompleted.toFloat() / totalTasks
                         } else 0f,
                         averageMood = averageMood.toFloat(),
-                        categoryStats = categoryStats
+                        categoryStats = categoryStats.mapKeys { it.key.name }
                     )
                 }
             } catch (e: Exception) {
