@@ -68,9 +68,10 @@ private fun TaskCardWithMenu(
     onDelete: () -> Unit
 ) {
     Box {
-        TaskCard(
+        SwipeableTaskCard(
             task = task,
             onToggleComplete = onToggleComplete,
+            onDelete = onDelete,
             onLongClick = onSelect
         )
         
