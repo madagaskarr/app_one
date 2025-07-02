@@ -7,6 +7,7 @@ import io.tigranes.app_one.data.preferences.PreferencesRepository
 import io.tigranes.app_one.data.preferences.ReminderTime
 import io.tigranes.app_one.data.preferences.Theme
 import io.tigranes.app_one.data.preferences.UserPreferences
+import io.tigranes.app_one.notifications.NotificationScheduler
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val preferencesRepository: PreferencesRepository
+    private val preferencesRepository: PreferencesRepository,
+    private val notificationScheduler: NotificationScheduler
 ) : ViewModel() {
     
     val userPreferences: StateFlow<UserPreferences> = preferencesRepository.userPreferences
@@ -34,6 +36,7 @@ class SettingsViewModel @Inject constructor(
     fun updateDailyReminder(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.updateDailyReminder(enabled)
+            notificationScheduler.updateNotificationSchedules()
         }
     }
     
@@ -43,12 +46,14 @@ class SettingsViewModel @Inject constructor(
                 enabled = userPreferences.value.dailyReminderEnabled,
                 time = ReminderTime(hour, minute)
             )
+            notificationScheduler.updateNotificationSchedules()
         }
     }
     
     fun updateMoodCheckIn(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.updateMoodCheckIn(enabled)
+            notificationScheduler.updateNotificationSchedules()
         }
     }
     
@@ -58,6 +63,7 @@ class SettingsViewModel @Inject constructor(
                 enabled = userPreferences.value.moodCheckInEnabled,
                 time = ReminderTime(hour, minute)
             )
+            notificationScheduler.updateNotificationSchedules()
         }
     }
     

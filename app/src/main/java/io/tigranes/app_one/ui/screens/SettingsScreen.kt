@@ -40,6 +40,8 @@ fun SettingsScreen(
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
     var showClearDataDialog by remember { mutableStateOf(false) }
+    var showDailyReminderTimePicker by remember { mutableStateOf(false) }
+    var showMoodCheckInTimePicker by remember { mutableStateOf(false) }
     
     // File pickers
     val exportLauncher = rememberLauncherForActivityResult(
@@ -106,7 +108,7 @@ fun SettingsScreen(
                     icon = Icons.Default.Schedule,
                     title = "Reminder Time",
                     subtitle = userPreferences.dailyReminderTime.toFormattedString(),
-                    onClick = { /* Show time picker */ }
+                    onClick = { showDailyReminderTimePicker = true }
                 )
             }
             
@@ -129,7 +131,7 @@ fun SettingsScreen(
                     icon = Icons.Default.Schedule,
                     title = "Check-in Time",
                     subtitle = userPreferences.moodCheckInTime.toFormattedString(),
-                    onClick = { /* Show time picker */ }
+                    onClick = { showMoodCheckInTimePicker = true }
                 )
             }
         }
@@ -272,6 +274,28 @@ fun SettingsScreen(
                 backupViewModel.clearAllData()
             },
             onDismiss = { showClearDataDialog = false }
+        )
+    }
+    
+    if (showDailyReminderTimePicker) {
+        TimePickerDialog(
+            initialHour = userPreferences.dailyReminderTime.hour,
+            initialMinute = userPreferences.dailyReminderTime.minute,
+            onTimeSelected = { hour, minute ->
+                settingsViewModel.updateDailyReminderTime(hour, minute)
+            },
+            onDismiss = { showDailyReminderTimePicker = false }
+        )
+    }
+    
+    if (showMoodCheckInTimePicker) {
+        TimePickerDialog(
+            initialHour = userPreferences.moodCheckInTime.hour,
+            initialMinute = userPreferences.moodCheckInTime.minute,
+            onTimeSelected = { hour, minute ->
+                settingsViewModel.updateMoodCheckInTime(hour, minute)
+            },
+            onDismiss = { showMoodCheckInTimePicker = false }
         )
     }
     
